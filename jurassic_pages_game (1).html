@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦖 Jurassic Pages</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #8B4513 0%, #D2691E 50%, #228B22 100%);
+            color: #2F1B14;
+            min-height: 100vh;
+        }
+        
+        .game-container {
+            display: flex;
+            height: 100vh;
+            padding: 10px;
+            gap: 10px;
+        }
+        
+        .sidebar {
+            width: 300px;
+            background: rgba(139, 69, 19, 0.9);
+            border: 3px solid #8B4513;
+            border-radius: 15px;
+            padding: 15px;
+            color: #F5DEB3;
+            overflow-y: auto;
+        }
+        
+        .main-area {
+            flex: 1;
+            background: rgba(245, 222, 179, 0.95);
+            border: 3px solid #8B4513;
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            color: #8B4513;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: rgba(139, 69, 19, 0.8);
+            color: #F5DEB3;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid #A0522D;
+        }
+        
+        .bookstore {
+            flex: 1;
+            background: rgba(255, 248, 220, 0.9);
+            border: 2px solid #8B4513;
+            border-radius: 10px;
+            padding: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .shelf {
+            display: inline-block;
+            width: 80px;
+            height: 60px;
+            background: #8B4513;
+            border: 2px solid #654321;
+            border-radius: 5px;
+            margin: 5px;
+            position: absolute;
+            cursor: pointer;
+            transition: transform 0.2s;
+            z-index: 5;
+        }
+        
+        .shelf:hover {
+            transform: scale(1.05);
+        }
+        
+        .shelf.has-books {
+            background: linear-gradient(to bottom, #8B4513 0%, #654321 20%, #FF6347 20%, #FF6347 40%, #32CD32 40%, #32CD32 60%, #4169E1 60%, #4169E1 80%, #FFD700 80%);
+        }
+        
+        .customer {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            z-index: 10;
+        }
+        
+        .customer.velociraptor {
+            background: #228B22;
+            animation: fastMove 2s infinite;
+        }
+        
+        .customer.triceratops {
+            background: #8B4513;
+            animation: slowMove 4s infinite;
+        }
+        
+        .customer.pterosaur {
+            background: #4169E1;
+            animation: flyMove 3s infinite;
+        }
+        
+        .customer.brontosaurus {
+            background: #32CD32;
+            animation: slowMove 6s infinite;
+        }
+        
+        @keyframes fastMove {
+            0%, 100% { transform: translateX(0px) translateY(0px); }
+            50% { transform: translateX(20px) translateY(-10px); }
+        }
+        
+        @keyframes slowMove {
+            0%, 100% { transform: translateX(0px); }
+            50% { transform: translateX(10px); }
+        }
+        
+        @keyframes flyMove {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .controls {
+            margin-bottom: 15px;
+        }
+        
+        .btn {
+            background: #8B4513;
+            color: #F5DEB3;
+            border: none;
+            padding: 8px 12px;
+            margin: 2px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: inherit;
+            border: 2px solid #654321;
+            transition: background 0.2s;
+        }
+        
+        .btn:hover {
+            background: #A0522D;
+        }
+        
+        .btn:disabled {
+            background: #696969;
+            cursor: not-allowed;
+        }
+        
+        .inventory {
+            background: rgba(245, 222, 179, 0.9);
+            border: 2px solid #8B4513;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        
+        .book-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px;
+            border-bottom: 1px solid #8B4513;
+        }
+        
+        .book-item:last-child {
+            border-bottom: none;
+        }
+        
+        .log {
+            background: rgba(47, 27, 20, 0.9);
+            color: #F5DEB3;
+            border: 2px solid #8B4513;
+            border-radius: 8px;
+            padding: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 3px;
+            border-left: 3px solid #228B22;
+            padding-left: 8px;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #FF6347;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .notification.show {
+            opacity: 1;
+        }
+        
+        .day-cycle {
+            text-align: center;
+            padding: 10px;
+            background: rgba(139, 69, 19, 0.8);
+            color: #F5DEB3;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .time-bar {
+            width: 100%;
+            height: 20px;
+            background: #654321;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        
+        .time-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #FFD700, #FF6347);
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="sidebar">
+            <h2>🦖 Store Management</h2>
+            
+            <div class="day-cycle">
+                <h3>Day <span id="dayCounter">1</span> - <span id="currentPhase">Morning</span></h3>
+                <div class="time-bar">
+                    <div class="time-progress" id="timeProgress"></div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button class="btn" onclick="buyShelf()">Add Shelf ($50)</button>
+                <button class="btn" onclick="restockBooks()">Restock Books ($30)</button>
+                <button class="btn" onclick="upgradeStore()">Upgrade Store ($200)</button>
+            </div>
+            
+            <div class="inventory">
+                <h3>📚 Inventory</h3>
+                <div id="inventoryList">
+                    <div class="book-item">
+                        <span>Stone Tablets</span>
+                        <span id="stoneCount">10</span>
+                    </div>
+                    <div class="book-item">
+                        <span>Modern Novels</span>
+                        <span id="novelCount">8</span>
+                    </div>
+                    <div class="book-item">
+                        <span>Dino Comics</span>
+                        <span id="comicCount">15</span>
+                    </div>
+                    <div class="book-item">
+                        <span>Poetry Books</span>
+                        <span id="poetryCount">5</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="log" id="gameLog">
+                <div class="log-entry">🦕 Welcome to Jurassic Pages! Your dinosaur customers await...</div>
+            </div>
+        </div>
+        
+        <div class="main-area">
+            <div class="header">
+                <h1>🦖 Jurassic Pages</h1>
+                <p>The Premier Dinosaur Bookstore</p>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-card">
+                    <h3>💰 Money</h3>
+                    <div id="money">$100</div>
+                </div>
+                <div class="stat-card">
+                    <h3>⭐ Reputation</h3>
+                    <div id="reputation">50</div>
+                </div>
+                <div class="stat-card">
+                    <h3>👥 Customers</h3>
+                    <div id="customerCount">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>📈 Sales Today</h3>
+                    <div id="salesCount">0</div>
+                </div>
+            </div>
+            
+            <div class="bookstore" id="bookstore">
+                <!-- Shelves will be generated here -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="notification" id="notification"></div>
+    
+    <script>
+        // Game State
+        let gameState = {
+            money: 100,
+            reputation: 50,
+            day: 1,
+            phase: 0, // 0: Morning, 1: Daytime, 2: Evening
+            timeProgress: 0,
+            shelves: [],
+            customers: [],
+            inventory: {
+                stone: 10,
+                novels: 8,
+                comics: 15,
+                poetry: 5
+            },
+            salesToday: 0,
+            storeLevel: 1
+        };
+        
+        // Customer types with their preferences
+        const customerTypes = {
+            velociraptor: {
+                emoji: '🦖',
+                name: 'Velociraptor',
+                patience: 30,
+                preferences: ['comics', 'novels'],
+                speed: 'fast',
+                payRange: [5, 15]
+            },
+            triceratops: {
+                emoji: '🦕',
+                name: 'Triceratops', 
+                patience: 60,
+                preferences: ['stone', 'poetry'],
+                speed: 'slow',
+                payRange: [10, 25]
+            },
+            pterosaur: {
+                emoji: '🦅',
+                name: 'Pterosaur',
+                patience: 45,
+                preferences: ['poetry', 'novels'],
+                speed: 'medium',
+                payRange: [8, 20]
+            },
+            brontosaurus: {
+                emoji: '🦴',
+                name: 'Brontosaurus',
+                patience: 90,
+                preferences: ['stone', 'novels'],
+                speed: 'very_slow',
+                payRange: [15, 40]
+            }
+        };
+        
+        const phaseNames = ['Morning', 'Daytime', 'Evening'];
+        
+        // Book titles by genre
+        const bookTitles = {
+            stone: [
+                "Ancient Dino Wisdom", "Cave Paintings 101", "Stone Age Recipes", 
+                "Prehistoric Philosophy", "Rock Solid Stories", "Tablet Tales",
+                "Ancient Dino Laws", "Cave Art Mastery", "Stone Carving Basics"
+            ],
+            novels: [
+                "Jurassic Love Story", "The Time Traveler's Dino", "Mystery at Fossil Ridge",
+                "Dino Detective Agency", "The Last Pterosaur", "Tales from the Mesozoic",
+                "Cretaceous Chronicles", "The Dino Whisperer", "Scales and Secrets"
+            ],
+            comics: [
+                "Super Stego Adventures", "Captain Raptor", "The Amazing T-Rex",
+                "Dino Squad Unite!", "Prehistoric Heroes", "Fossil Fighters",
+                "The Mighty Triceratops", "Pterosaur Patrol", "Dino Power Rangers"
+            ],
+            poetry: [
+                "Odes to the Cretaceous", "Haikus from the Jurassic", "Songs of the Sauropods",
+                "Raptor Rhymes", "Pterosaur Poetry", "Verses from the Valley",
+                "Ancient Rhythms", "Dino Dreams", "Scales and Sonnets"
+            ]
+        };
+        
+        // Initialize game
+        function initGame() {
+            createInitialShelves();
+            updateUI();
+            startDayCycle();
+            spawnCustomers();
+        }
+        
+        function getRandomBookTitle(genre) {
+            const titles = bookTitles[genre];
+            return titles[Math.floor(Math.random() * titles.length)];
+        }
+        
+        function createInitialShelves() {
+            const bookstore = document.getElementById('bookstore');
+            for (let i = 0; i < 6; i++) {
+                createShelf(i);
+            }
+        }
+        
+        function createShelf(index) {
+            const bookstore = document.getElementById('bookstore');
+            const shelf = document.createElement('div');
+            shelf.className = 'shelf has-books';
+            shelf.id = `shelf-${index}`;
+            
+            // Calculate position to ensure shelves stay within visible area
+            const shelfWidth = 80;
+            const shelfHeight = 60;
+            const margin = 20;
+            const bookstoreWidth = bookstore.clientWidth || 800; // fallback width
+            const bookstoreHeight = bookstore.clientHeight || 400; // fallback height
+            
+            const maxCols = Math.floor((bookstoreWidth - margin * 2) / (shelfWidth + 20));
+            const col = index % maxCols;
+            const row = Math.floor(index / maxCols);
+            
+            const left = margin + col * (shelfWidth + 20);
+            const top = margin + row * (shelfHeight + 20);
+            
+            // Ensure shelf doesn't go outside bounds
+            shelf.style.left = Math.min(left, bookstoreWidth - shelfWidth - margin) + 'px';
+            shelf.style.top = Math.min(top, bookstoreHeight - shelfHeight - margin) + 'px';
+            shelf.style.position = 'absolute';
+            
+            shelf.onclick = () => interactWithShelf(index);
+            bookstore.appendChild(shelf);
+            
+            gameState.shelves.push({
+                id: index,
+                books: Math.floor(Math.random() * 10) + 5
+            });
+        }
+        
+        function spawnCustomers() {
+            if (gameState.phase !== 1) return; // Only spawn during daytime
+            
+            const types = Object.keys(customerTypes);
+            const randomType = types[Math.floor(Math.random() * types.length)];
+            
+            // Calculate visitor capacity based on shelves and store level
+            const baseCapacity = 3;
+            const shelfBonus = Math.floor(gameState.shelves.length / 3); // +1 capacity per 3 shelves
+            const levelBonus = gameState.storeLevel - 1; // +1 per level above 1
+            const maxCustomers = baseCapacity + shelfBonus + levelBonus;
+            
+            if (gameState.customers.length < maxCustomers) {
+                spawnCustomer(randomType);
+            }
+            
+            // Spawn rate also depends on store attractiveness
+            const attractiveness = gameState.shelves.length + gameState.storeLevel * 2;
+            const baseDelay = 5000;
+            const spawnDelay = Math.max(1000, baseDelay - attractiveness * 100);
+            
+            // Continue spawning
+            setTimeout(spawnCustomers, Math.random() * spawnDelay + 2000);
+        }
+        
+        function spawnCustomer(type) {
+            const bookstore = document.getElementById('bookstore');
+            const customer = document.createElement('div');
+            const customerData = customerTypes[type];
+            
+            customer.className = `customer ${type}`;
+            customer.innerHTML = customerData.emoji;
+            
+            // Calculate safe spawn position within bookstore bounds
+            const customerSize = 40;
+            const margin = 10;
+            const bookstoreWidth = bookstore.clientWidth || 800;
+            const bookstoreHeight = bookstore.clientHeight || 400;
+            
+            const maxLeft = bookstoreWidth - customerSize - margin;
+            const maxTop = bookstoreHeight - customerSize - margin;
+            
+            // Spawn at safe positions
+            const left = Math.min(Math.max(margin, Math.random() * maxLeft), maxLeft);
+            const top = Math.min(Math.max(margin, Math.random() * maxTop), maxTop);
+            
+            customer.style.left = left + 'px';
+            customer.style.top = top + 'px';
+            customer.style.position = 'absolute';
+            customer.onclick = () => serveCustomer(customer, type);
+            
+            bookstore.appendChild(customer);
+            
+            const customerId = Date.now() + Math.random(); // More unique ID
+            gameState.customers.push({
+                id: customerId,
+                type: type,
+                element: customer,
+                patience: customerData.patience,
+                served: false
+            });
+            
+            // Customer leaves after patience runs out
+            const patienceTimer = setTimeout(() => {
+                const customerObj = gameState.customers.find(c => c.id === customerId);
+                if (customerObj && !customerObj.served) {
+                    removeCustomer(customerId);
+                    addLog(`😤 ${customerData.name} left impatiently!`);
+                    gameState.reputation -= 2;
+                    updateUI();
+                }
+            }, customerData.patience * 1000);
+            
+            // Store timer reference for cleanup
+            gameState.customers[gameState.customers.length - 1].timer = patienceTimer;
+            
+            updateUI();
+        }
+        
+        function serveCustomer(element, type) {
+            const customerData = customerTypes[type];
+            const preference = customerData.preferences[Math.floor(Math.random() * customerData.preferences.length)];
+            
+            // Check if we have the preferred book
+            const bookTypes = {
+                stone: 'stoneCount',
+                novels: 'novelCount', 
+                comics: 'comicCount',
+                poetry: 'poetryCount'
+            };
+            
+            const inventoryKey = {
+                stone: 'stone',
+                novels: 'novels',
+                comics: 'comics', 
+                poetry: 'poetry'
+            };
+            
+            if (gameState.inventory[inventoryKey[preference]] > 0) {
+                // Calculate price with reputation bonus
+                const basePrice = customerData.payRange[0] + Math.random() * (customerData.payRange[1] - customerData.payRange[0]);
+                const reputationMultiplier = 1 + (gameState.reputation - 50) / 200; // +/-25% based on reputation
+                const finalPrice = Math.max(1, Math.floor(basePrice * reputationMultiplier));
+                
+                const bookTitle = getRandomBookTitle(preference);
+                
+                gameState.money += finalPrice;
+                gameState.inventory[inventoryKey[preference]]--;
+                gameState.reputation += 1;
+                gameState.salesToday++;
+                
+                addLog(`📚 Sold "${bookTitle}" to ${customerData.name} for ${finalPrice}!`);
+                showNotification(`+${finalPrice} from ${customerData.name}!`);
+            } else {
+                // No stock
+                gameState.reputation -= 1;
+                addLog(`😞 No ${preference} books for ${customerData.name}!`);
+                showNotification(`Out of ${preference} books!`);
+            }
+            
+            // Remove customer
+            const customerId = gameState.customers.find(c => c.element === element)?.id;
+            if (customerId) {
+                removeCustomer(customerId);
+            }
+            
+            updateUI();
+        }
+        
+        function removeCustomer(customerId) {
+            const customerIndex = gameState.customers.findIndex(c => c.id === customerId);
+            if (customerIndex !== -1) {
+                const customer = gameState.customers[customerIndex];
+                if (customer.element && customer.element.parentNode) {
+                    customer.element.parentNode.removeChild(customer.element);
+                }
+                gameState.customers.splice(customerIndex, 1);
+            }
+        }
+        
+        function buyShelf() {
+            if (gameState.money >= 50) {
+                gameState.money -= 50;
+                createShelf(gameState.shelves.length);
+                addLog('📚 Added new bookshelf!');
+                updateUI();
+            } else {
+                showNotification('Not enough money for a shelf!');
+            }
+        }
+        
+        function restockBooks() {
+            if (gameState.money >= 30) {
+                gameState.money -= 30;
+                gameState.inventory.stone += 5;
+                gameState.inventory.novels += 5;
+                gameState.inventory.comics += 8;
+                gameState.inventory.poetry += 3;
+                addLog('📦 Restocked all books!');
+                updateUI();
+            } else {
+                showNotification('Not enough money to restock!');
+            }
+        }
+        
+        function upgradeStore() {
+            if (gameState.money >= 200) {
+                gameState.money -= 200;
+                gameState.storeLevel++;
+                gameState.reputation += 10;
+                addLog(`⭐ Store upgraded to level ${gameState.storeLevel}!`);
+                updateUI();
+            } else {
+                showNotification('Need $200 to upgrade store!');
+            }
+        }
+        
+        function interactWithShelf(index) {
+            const shelf = gameState.shelves[index];
+            if (shelf && shelf.books > 0) {
+                addLog(`📖 Shelf ${index + 1} has ${shelf.books} books`);
+            }
+        }
+        
+        function startDayCycle() {
+            const phaseTime = 20000; // 20 seconds per phase
+            let phaseProgress = 0;
+            
+            const interval = setInterval(() => {
+                phaseProgress += 100;
+                gameState.timeProgress = (phaseProgress / phaseTime) * 100;
+                
+                document.getElementById('timeProgress').style.width = gameState.timeProgress + '%';
+                
+                if (phaseProgress >= phaseTime) {
+                    phaseProgress = 0;
+                    gameState.phase = (gameState.phase + 1) % 3;
+                    
+                    if (gameState.phase === 0) {
+                        // New day
+                        gameState.day++;
+                        gameState.salesToday = 0;
+                        
+                        // Clear remaining customers and their timers
+                        gameState.customers.forEach(customer => {
+                            if (customer.timer) {
+                                clearTimeout(customer.timer);
+                            }
+                            if (customer.element && customer.element.parentNode) {
+                                customer.element.parentNode.removeChild(customer.element);
+                            }
+                        });
+                        gameState.customers = [];
+                        
+                        addLog(`🌅 Day ${gameState.day} begins!`);
+                        
+                        // Daily reputation boost for good service
+                        if (gameState.reputation >= 80) {
+                            gameState.reputation += 2;
+                        }
+                    }
+                    
+                    if (gameState.phase === 1) {
+                        // Start spawning customers
+                        setTimeout(spawnCustomers, 1000);
+                    }
+                    
+                    updateUI();
+                }
+            }, 100);
+        }
+        
+        function updateUI() {
+            document.getElementById('money').textContent = '$' + gameState.money;
+            document.getElementById('reputation').textContent = gameState.reputation;
+            document.getElementById('customerCount').textContent = gameState.customers.length;
+            document.getElementById('salesCount').textContent = gameState.salesToday;
+            document.getElementById('dayCounter').textContent = gameState.day;
+            document.getElementById('currentPhase').textContent = phaseNames[gameState.phase];
+            
+            // Update inventory
+            document.getElementById('stoneCount').textContent = gameState.inventory.stone;
+            document.getElementById('novelCount').textContent = gameState.inventory.novels;
+            document.getElementById('comicCount').textContent = gameState.inventory.comics;
+            document.getElementById('poetryCount').textContent = gameState.inventory.poetry;
+        }
+        
+        function addLog(message) {
+            const log = document.getElementById('gameLog');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.textContent = message;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Start the game
+        initGame();
+    </script>
+</body>
+</html>
